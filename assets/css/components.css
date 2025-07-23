@@ -1,0 +1,26 @@
+/* assets/css/components.css */
+
+/* ボタン基本スタイル */
+.btn-primary {
+  @apply bg-gray-900 text-white px-6 py-2 rounded hover:opacity-90 transition;
+}
+
+/* フォーム入力欄 */
+.input-form {
+  @apply w-full border px-3 py-2 rounded bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400;
+}
+
+/* タイトル */
+.title-section {
+  @apply text-2xl font-semibold mb-6 text-center;
+}
+
+/* テキストボックス */
+.input {
+  @apply w-full border border-neutral-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-red-200;
+}
+
+img {
+  border-radius: 0.375rem;
+  background-color: #f9f9f9;
+}
