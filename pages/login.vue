@@ -70,6 +70,8 @@ const email = ref('');
 const password = ref('');
 const showPassword = ref(false);
 
+const config = useRuntimeConfig();
+
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
 };
@@ -78,7 +80,7 @@ const userStore = useUserStore();
 
 const login = async () => {
   try {
-    const res = await fetch('http://localhost:3001/api/login', {
+    const res = await fetch(`${config.public.apiBaseUrl}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

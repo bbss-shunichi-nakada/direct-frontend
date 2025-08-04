@@ -3,6 +3,13 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
 
+  // 環境変数から読み込み
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: 'default-api-url',
+    },
+  },
+
   vite: {
     server: {
       watch: {
@@ -13,8 +20,5 @@ export default defineNuxtConfig({
 
   modules: ['@nuxtjs/tailwindcss', '@nuxt/icon', '@pinia/nuxt'],
 
-  css: [
-    '~/assets/css/tailwind.css', // OK
-    '~/assets/css/components.css', // OK
-  ],
+  css: ['~/assets/css/tailwind.css', '~/assets/css/components.css'],
 });
