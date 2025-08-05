@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col min-h-screen">
-    <HeaderComponent />
+    <BaseHeader />
     <main class="flex-grow">
       <slot />
     </main>
-    <FooterComponent />
+    <BaseFooter />
   </div>
 </template>

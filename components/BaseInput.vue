@@ -1,4 +1,3 @@
-<!-- components/BaseInput.vue -->
 <template>
   <div class="mb-4">
     <label v-if="label" class="block text-sm font-medium text-gray-700 mb-1">
@@ -7,12 +6,13 @@
     <div class="relative">
       <input
         :type="type"
-        v-model="modelValue"
+        :value="modelValue"
         :class="[
           'w-full border rounded px-3 py-2 pr-10 focus:outline-none',
           error ? 'border-red-500' : 'border-neutral-border',
         ]"
-        @input="$emit('update:modelValue', $event.target.value)"
+        @input="onInput"
+        @blur="$emit('blur')"
       />
       <button
         v-if="appendIcon"
@@ -36,8 +36,13 @@ defineProps<{
   appendIcon?: string;
 }>();
 
-defineEmits<{
+const emits = defineEmits<{
   (e: 'update:modelValue', value: string): void;
   (e: 'append-click'): void;
+  (e: 'blur'): void;
 }>();
+
+const onInput = (e: Event) => {
+  emits('update:modelValue', (e.target as HTMLInputElement).value);
+};
 </script>

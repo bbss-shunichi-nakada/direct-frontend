@@ -11,6 +11,8 @@
           type="email"
           v-model="form.email"
           :error="errors.email"
+          @input="clearError('email')"
+          @blur="validateField('email')"
         />
         <BaseInput
           label="パスワード"
@@ -18,12 +20,18 @@
           v-model="form.password"
           :error="errors.password"
           :append-icon="showPassword ? '非表示' : '表示'"
+          @input="clearError('password')"
+          @blur="validateField('password')"
           @append-click="togglePassword"
         />
 
         <BaseButton
           type="submit"
-          class="w-full bg-gray-900 text-white py-2 rounded-full text-sm"
+          variant="primary"
+          size="base"
+          :loading="isSubmitting"
+          :disabled="isSubmitting"
+          class="w-full rounded-full"
         >
           ログイン
         </BaseButton>
@@ -41,7 +49,8 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useAuth } from '~/composables/useAuth';
-import { loginSchema, LoginForm } from '~/schemas/loginSchema';
+import { loginSchema } from '~/schemas/loginSchema';
+import type { LoginForm } from '~/schemas/loginSchema';
 
 const showPassword = ref(false);
 const togglePassword = () => (showPassword.value = !showPassword.value);
@@ -55,28 +64,50 @@ const form = reactive<LoginForm>({
 // バリデーションエラー保持用
 const errors = reactive<Partial<Record<keyof LoginForm, string>>>({});
 
+// 個別項目のバリデーション（onBlur時）
+const validateField = (field: keyof LoginForm) => {
+  const singleSchema = loginSchema.shape[field];
+  const result = singleSchema.safeParse(form[field]);
+  if (!result.success) {
+    errors[field] = result.error.issues[0].message;
+  } else {
+    errors[field] = undefined;
+  }
+};
+
+// 入力時にエラークリア
+const clearError = (field: keyof LoginForm) => {
+  errors[field] = undefined;
+};
+
+const { isSubmitting, handleSubmit } = useFormSubmit();
+
 const userStore = useUserStore();
 const { login } = useAuth();
 
-const onSubmit = async () => {
-  // Zodでバリデーション
-  const result = loginSchema.safeParse(form);
-  if (!result.success) {
-    // エラーメッセージを設定
-    Object.assign(errors, {});
-    for (const issue of result.error.issues) {
-      errors[issue.path[0] as keyof LoginForm] = issue.message;
+const onSubmit = () =>
+  handleSubmit(async () => {
+    // Zodでバリデーション
+    const result = loginSchema.safeParse(form);
+    if (!result.success) {
+      // エラーメッセージを設定
+      Object.assign(errors, {});
+      for (const issue of result.error.issues) {
+        errors[issue.path[0] as keyof LoginForm] = issue.message;
+      }
+      return;
     }
-    return;
-  }
 
-  // API呼び出し
-  const success = await login(result.data.email, result.data.password);
-  if (success) {
-    userStore.login();
-    navigateTo('/cart');
-  } else {
-    alert('ログインに失敗しました');
-  }
-};
+    // 送信中フラグを立てる
+    isSubmitting.value = true;
+
+    // バリデーション成功後、ログイン処理
+    const success = await login(result.data.email, result.data.password);
+    if (success) {
+      userStore.login();
+      navigateTo('/cart');
+    } else {
+      alert('ログインに失敗しました');
+    }
+  });
 </script>
