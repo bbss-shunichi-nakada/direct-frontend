@@ -1,55 +1,70 @@
 <template>
-  <div class="max-w-md mx-auto px-4 py-16">
-    <div class="bg-white border border-gray-200 shadow-sm rounded p-8">
-      <h1 class="text-2xl font-semibold text-gray-900 text-center mb-8">パスワードの変更</h1>
+  <div class="p-6 max-w-md mx-auto">
+    <h2 class="text-2xl font-semibold text-center mb-6">パスワード変更</h2>
 
-      <form @submit.prevent="handleSubmit">
-        <div class="mb-4">
-          <label for="current" class="block text-sm font-medium text-gray-700 mb-1">
-            現在のパスワード
-          </label>
-          <input type="password" id="current" v-model="currentPassword" class="input" required />
-        </div>
+    <form @submit.prevent="onSubmit" class="space-y-4">
+      <BaseInput
+        label="現在のパスワード"
+        type="password"
+        v-model="form.currentPassword"
+        :error="errors.currentPassword"
+        @input="clearError('currentPassword')"
+        @blur="validateField('currentPassword')"
+        required
+      />
 
-        <div class="mb-4">
-          <label for="new" class="block text-sm font-medium text-gray-700 mb-1">
-            新しいパスワード
-          </label>
-          <input type="password" id="new" v-model="newPassword" class="input" required />
-        </div>
+      <BaseInput
+        label="新しいパスワード"
+        type="password"
+        v-model="form.newPassword"
+        :error="errors.newPassword"
+        @input="clearError('newPassword')"
+        @blur="validateField('newPassword')"
+        required
+      />
 
-        <div class="mb-6">
-          <label for="confirm" class="block text-sm font-medium text-gray-700 mb-1">
-            新しいパスワード（確認）
-          </label>
-          <input type="password" id="confirm" v-model="confirmPassword" class="input" required />
-        </div>
+      <BaseInput
+        label="確認用パスワード"
+        type="password"
+        v-model="form.confirmPassword"
+        :error="errors.confirmPassword"
+        @input="clearError('confirmPassword')"
+        @blur="validateField('confirmPassword')"
+        required
+      />
 
-        <BaseButton type="submit" class="w-full bg-gray-900 text-white py-2 rounded-full text-sm">
-          保存する
-        </BaseButton>
-      </form>
-    </div>
+      <BaseButton type="submit" :disabled="isSubmitting" class="w-full">
+        {{ isSubmitting ? '変更中...' : 'パスワードを変更する' }}
+      </BaseButton>
+    </form>
   </div>
 </template>
 
-<script setup>
-const currentPassword = ref('');
-const newPassword = ref('');
-const confirmPassword = ref('');
+<script setup lang="ts">
+import { useZodForm } from '@/composables/useZodForm';
+import { changePasswordSchema } from '@/schemas/changePasswordSchema';
+import { useChangePassword } from '@/composables/useChangePassword';
 
-const handleSubmit = () => {
-  if (newPassword.value !== confirmPassword.value) {
-    alert('パスワードが一致しません');
-    return;
-  }
+const { form, errors, validate, validateField, clearError } =
+  useZodForm(changePasswordSchema);
 
-  navigateTo('/profile');
+const { handleSubmit, isSubmitting } = useFormSubmit();
+
+const { changePassword } = useChangePassword();
+
+const onSubmit = () => {
+  if (!validate()) return;
+
+  handleSubmit(async () => {
+    const success = await changePassword({
+      currentPassword: form.currentPassword,
+      newPassword: form.newPassword,
+    });
+    if (success) {
+      navigateTo('/profile');
+    } else {
+      alert('登録に失敗しました');
+    }
+  });
 };
 </script>
-
-<style scoped>
-.input {
-  @apply w-full border border-neutral-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-red-200;
-}
-</style>

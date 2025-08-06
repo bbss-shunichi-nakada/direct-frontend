@@ -1,67 +1,119 @@
 <template>
   <div class="p-6">
-    <h2 class="text-2xl font-semibold text-center mb-6">サインアップ画面</h2>
+    <h2 class="text-2xl font-semibold text-center mb-6">サインアップ</h2>
 
     <form @submit.prevent="onSubmit" class="space-y-4 max-w-md mx-auto">
-      <input
-        type="text"
-        v-model="name"
-        placeholder="ユーザー名"
-        class="w-full border px-3 py-2 rounded bg-gray-50"
-      />
-      <input
+      <!-- 必須 -->
+      <BaseInput
+        label="メールアドレス"
         type="email"
-        v-model="email"
-        placeholder="メールアドレス"
-        class="w-full border px-3 py-2 rounded bg-gray-50"
+        v-model="form.email"
+        :error="errors.email"
+        @input="clearError('email')"
+        @blur="validateField('email')"
       />
-      <input
+      <BaseInput
+        label="パスワード"
         type="password"
-        v-model="password"
-        placeholder="パスワード"
-        class="w-full border px-3 py-2 rounded bg-gray-50"
+        v-model="form.password"
+        :error="errors.password"
+        @input="clearError('password')"
+        @blur="validateField('password')"
       />
-      <BaseButton class="bg-indigo-600 text-white px-6 py-2 rounded w-full"
-        >登録する</BaseButton
+
+      <!-- 任意 -->
+      <BaseInput
+        label="氏名"
+        v-model="form.name"
+        :error="errors.name"
+        @input="clearError('name')"
+        @blur="validateField('name')"
+      />
+      <BaseInput
+        label="氏名（カナ）"
+        v-model="form.kana"
+        :error="errors.kana"
+        @input="clearError('kana')"
+        @blur="validateField('kana')"
+      />
+      <BaseInput
+        label="郵便番号"
+        v-model="form.postalCode"
+        :error="errors.postalCode"
+        @input="clearError('postalCode')"
+        @blur="validateField('postalCode')"
+      />
+      <BaseInput
+        label="都道府県"
+        v-model="form.prefecture"
+        :error="errors.prefecture"
+        @input="clearError('prefecture')"
+        @blur="validateField('prefecture')"
+      />
+      <BaseInput
+        label="市区町村・番地"
+        v-model="form.address1"
+        :error="errors.address1"
+        @input="clearError('address1')"
+        @blur="validateField('address1')"
+      />
+      <BaseInput
+        label="建物名・部屋番号"
+        v-model="form.address2"
+        :error="errors.address2"
+        @input="clearError('address2')"
+        @blur="validateField('address2')"
+      />
+      <BaseInput
+        label="電話番号"
+        v-model="form.phone"
+        :error="errors.phone"
+        @input="clearError('phone')"
+        @blur="validateField('phone')"
+      />
+
+      <div class="flex items-center space-x-2">
+        <input id="newsletter" type="checkbox" v-model="form.newsletter" />
+        <label for="newsletter" class="text-sm">メルマガを受け取る</label>
+      </div>
+
+      <BaseButton
+        type="submit"
+        variant="primary"
+        size="base"
+        :loading="isSubmitting"
+        :disabled="isSubmitting"
+        class="w-full rounded-full"
       >
+        登録
+      </BaseButton>
     </form>
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
+<script setup lang="ts">
+import { useZodForm } from '~/composables/useZodForm';
+import { useFormSubmit } from '~/composables/useFormSubmit';
+import { useSignup } from '~/composables/useSignup';
+import { signupSchema } from '~/schemas/signupSchema';
 
-const name = ref('');
-const email = ref('');
-const password = ref('');
+const { form, errors, validate, validateField, clearError } =
+  useZodForm(signupSchema);
 
-const userStore = useUserStore();
+const { handleSubmit, isSubmitting } = useFormSubmit();
 
-const onSubmit = async () => {
-  try {
-    const res = await fetch('http://localhost:3001/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: name.value,
-        email: email.value,
-        password: password.value,
-      }),
-    });
+const { signup } = useSignup();
 
-    const data = await res.json();
+const onSubmit = () => {
+  if (!validate()) return;
 
-    if (res.ok) {
-      console.log('アカウント作成成功:', data);
-      userStore.login(); // ログイン状態に切り替え
+  handleSubmit(async () => {
+    const success = await signup(form);
+    if (success) {
       navigateTo('/profile');
     } else {
-      console.error('アカウント作成失敗:', data?.message || '不明なエラー');
-      alert('アカウント作成に失敗しました');
+      alert('登録に失敗しました');
     }
-  } catch (error) {
-    console.error('通信エラー:', error);
-    alert('通信に失敗しました');
-  }
+  });
 };
 </script>

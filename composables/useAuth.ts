@@ -1,5 +1,3 @@
-// composables/useAuth.ts
-
 export const useAuth = () => {
   const config = useRuntimeConfig();
 

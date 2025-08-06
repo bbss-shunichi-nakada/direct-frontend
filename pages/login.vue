@@ -47,62 +47,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
-import { useAuth } from '~/composables/useAuth';
+import { ref } from 'vue';
 import { loginSchema } from '~/schemas/loginSchema';
-import type { LoginForm } from '~/schemas/loginSchema';
+import { useZodForm } from '~/composables/useZodForm';
+import { useFormSubmit } from '~/composables/useFormSubmit';
+import { useUserStore } from '~/stores/user';
+import { useAuth } from '~/composables/useAuth';
 
 const showPassword = ref(false);
 const togglePassword = () => (showPassword.value = !showPassword.value);
 
-// v-model用フォームデータ
-const form = reactive<LoginForm>({
-  email: '',
-  password: '',
-});
-
-// バリデーションエラー保持用
-const errors = reactive<Partial<Record<keyof LoginForm, string>>>({});
-
-// 個別項目のバリデーション（onBlur時）
-const validateField = (field: keyof LoginForm) => {
-  const singleSchema = loginSchema.shape[field];
-  const result = singleSchema.safeParse(form[field]);
-  if (!result.success) {
-    errors[field] = result.error.issues[0].message;
-  } else {
-    errors[field] = undefined;
-  }
-};
-
-// 入力時にエラークリア
-const clearError = (field: keyof LoginForm) => {
-  errors[field] = undefined;
-};
+const { form, errors, validate, validateField, clearError } =
+  useZodForm(loginSchema);
 
 const { isSubmitting, handleSubmit } = useFormSubmit();
 
 const userStore = useUserStore();
 const { login } = useAuth();
 
-const onSubmit = () =>
+const onSubmit = () => {
+  if (!validate()) return;
+
   handleSubmit(async () => {
-    // Zodでバリデーション
-    const result = loginSchema.safeParse(form);
-    if (!result.success) {
-      // エラーメッセージを設定
-      Object.assign(errors, {});
-      for (const issue of result.error.issues) {
-        errors[issue.path[0] as keyof LoginForm] = issue.message;
-      }
-      return;
-    }
-
-    // 送信中フラグを立てる
-    isSubmitting.value = true;
-
     // バリデーション成功後、ログイン処理
-    const success = await login(result.data.email, result.data.password);
+    const success = await login(form.email, form.password);
     if (success) {
       userStore.login();
       navigateTo('/cart');
@@ -110,4 +78,5 @@ const onSubmit = () =>
       alert('ログインに失敗しました');
     }
   });
+};
 </script>

@@ -1,4 +1,4 @@
-# direct-spa-nuxt
+# direct-frontend
 
 このプロジェクトは Nuxt 3 + Tailwind CSS をベースとした SPA（シングルページアプリケーション）です。  
 AWS EC2 上でも開発・運用できるように整備されています。VSCode 拡張機能やフォーマッターもバックエンドと統一されています。
@@ -8,7 +8,7 @@ AWS EC2 上でも開発・運用できるように整備されています。VSC
 ## 📦 構成
 
 ```
-direct-spa-nuxt/
+direct-frontend/
 ├── frontend/           # Nuxt アプリケーション本体
 ├── .vscode/            # エディタ設定（共通化）
 ├── .prettierrc         # Prettier 設定（JSON形式）
@@ -22,7 +22,7 @@ direct-spa-nuxt/
 ### 1. 依存パッケージのインストール
 
 ```bash
-cd /home/ec2-user/direct-spa-nuxt
+cd /home/ec2-user/direct-frontend
 npm install
 ```
 
