@@ -7,7 +7,7 @@ export const useAuth = () => {
    */
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const res = await fetch(`${config.public.apiBaseUrl}/api/login`, {
+      const res = await fetch(`${config.public.apiBaseUrl}/api/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

@@ -9,7 +9,7 @@ export const useSignup = () => {
    */
   const signup = async (form: SignupForm): Promise<boolean> => {
     try {
-      const res = await fetch(`${config.public.apiBaseUrl}/api/users`, {
+      const res = await fetch(`${config.public.apiBaseUrl}/api/users/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
