@@ -1,4 +1,3 @@
-// schemas/cartSchema.ts
 import { z } from 'zod';
 
 export const cartItemSchema = z.object({

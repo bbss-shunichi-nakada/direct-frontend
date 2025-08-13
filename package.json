@@ -19,5 +19,8 @@
     "vue": "latest",
     "vue-router": "latest",
     "zod": "^4.0.14"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1"
   }
 }

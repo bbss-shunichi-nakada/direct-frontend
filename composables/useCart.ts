@@ -1,6 +1,4 @@
-// composables/useCart.ts
 import { storeToRefs } from 'pinia';
-import { z } from 'zod';
 import { useCartStore } from '~/stores/cart';
 import { cartSchema } from '~/schemas/cartSchema';
 
@@ -11,13 +9,13 @@ type PendingMap = Record<string, boolean>;
 export function useCart() {
   const store = useCartStore();
   const { items, subtotal, totalQuantity } = storeToRefs(store);
-  const pending: Ref<PendingMap> = ref({}); // 商品ごとの数量更新ロック
+  const pending: Ref<Record<string, boolean>> = ref({}); // 商品ごとの数量更新ロック
   const syncing = ref(false); // サーバー同期中
   const validating = ref(false); // チェックアウト前検証中
 
   // --- localStorage 永続化（未ログイン時用） ---
   const loadFromLocal = () => {
-    if (!process.client) return;
+    if (!import.meta.client) return;
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (!raw) return;
@@ -27,7 +25,7 @@ export function useCart() {
     } catch {}
   };
   const saveToLocal = () => {
-    if (!process.client) return;
+    if (!import.meta.client) return;
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(items.value));
     } catch {}
@@ -62,32 +60,42 @@ export function useCart() {
   };
 
   // --- 数量変更（楽観更新 → 在庫確認 → 失敗ロールバック） ---
-  const setQuantity = async (id: string, qty: number) => {
-    if (pending.value[id]) return;
-    pending.value[id] = true;
+  const setQuantity = async (id: string | number, qty: number) => {
+    const key = String(id);
+    if (pending.value[key]) return;
 
-    const before = structuredClone(items.value);
-    store.updateQty(id, qty);
+    // ★ busy ロックは再代入で反映させる
+    pending.value = { ...pending.value, [key]: true };
+
+    // ★ structuredClone をやめてシャローコピーでバックアップ
+    const before = items.value.map((i) => ({ ...i }));
+
+    // 入力を正規化（1以上の整数）
+    const nextQty = Math.max(1, Math.floor(qty));
+    store.updateQty(key, nextQty);
 
     try {
-      const res = await api.checkStock(id, qty);
+      const res = await api.checkStock(key, nextQty);
       if (!res.ok) throw new Error('在庫不足');
+
       if (res.maxQty != null) {
-        const it = items.value.find((i) => i.id === id);
+        const it = items.value.find((i) => i.id === key);
         if (it) {
           it.maxQty = res.maxQty;
-          if (it.quantity > res.maxQty) store.updateQty(id, res.maxQty);
+          if (it.quantity > res.maxQty) store.updateQty(key, res.maxQty);
         }
       }
       saveToLocal();
       return true;
     } catch (e) {
-      // ロールバック
+      // ★ ロールバック
       store.set(before);
       saveToLocal();
       return false;
     } finally {
-      pending.value[id] = false;
+      // ★ アンロック（再代入で reactive 反映）
+      const { [key]: _drop, ...rest } = pending.value;
+      pending.value = { ...rest };
     }
   };
 
