@@ -4,11 +4,13 @@ export const changePasswordSchema = z
   .object({
     currentPassword: z
       .string()
+      .nonempty('現在のパスワードを入力してください')
       .min(8, '現在のパスワードは8文字以上で入力してください')
       .max(64)
       .default(''),
     newPassword: z
       .string()
+      .nonempty('新しいパスワードを入力してください')
       .min(8, '新しいパスワードは8文字以上で入力してください')
       .max(64)
       .regex(
@@ -18,6 +20,7 @@ export const changePasswordSchema = z
       .default(''),
     confirmPassword: z
       .string()
+      .nonempty('確認用パスワードを入力してください')
       .min(8, '確認用パスワードは8文字以上で入力してください')
       .default(''),
   })

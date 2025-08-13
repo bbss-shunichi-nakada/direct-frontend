@@ -33,7 +33,15 @@
         required
       />
 
-      <BaseButton type="submit" :disabled="isSubmitting" class="w-full">
+      <BaseButton
+        type="submit"
+        variant="primary"
+        size="base"
+        :loading="isSubmitting"
+        :disabled="isSubmitting"
+        class="w-full rounded-full"
+      >
+        <!-- パスワードを変更する -->
         {{ isSubmitting ? '変更中...' : 'パスワードを変更する' }}
       </BaseButton>
     </form>
