@@ -100,6 +100,16 @@ const checkout = async () => {
     alert('在庫や価格に変更があります。カートを確認してください。');
     return;
   }
+
+  // 任意：サーバへ注文作成を投げる
+  // const payload = { items: items.value.map(i => ({ productId: i.id, qty: i.quantity })) }
+  // const created = await $fetch<{ orderId: number }>(`${config.public.apiBaseUrl}/orders/create`, {
+  //   method: 'POST',
+  //   credentials: 'include',
+  //   headers: userStore.accessToken ? { Authorization: `Bearer ${userStore.accessToken}` } : {},
+  //   body: payload,
+  // })
+  
   navigateTo('/checkout'); // 実導線に合わせて変更
 };
 </script>

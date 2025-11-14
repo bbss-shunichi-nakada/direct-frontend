@@ -92,28 +92,29 @@
 </template>
 
 <script setup lang="ts">
+import { useRuntimeConfig } from '#app';
 import { useZodForm } from '~/composables/useZodForm';
-import { useFormSubmit } from '~/composables/useFormSubmit';
-import { useSignup } from '~/composables/useSignup';
 import { signupSchema } from '~/schemas/signupSchema';
+import { useFormSubmit } from '~/composables/useFormSubmit';
 
+// 既存：form/errors/validate などはそのまま
 const { form, errors, validate, validateField, clearError } =
   useZodForm(signupSchema);
+const config = useRuntimeConfig();
+const { isSubmitting, handleSubmit } = useFormSubmit();
 
-const { handleSubmit, isSubmitting } = useFormSubmit();
-
-const { signup } = useSignup();
-
+// 既存の onSubmit をこの実装に入れ替え（templateは触らない）
 const onSubmit = () => {
   if (!validate()) return;
 
   handleSubmit(async () => {
-    const success = await signup(form);
-    if (success) {
-      navigateTo('/profile');
-    } else {
-      alert('登録に失敗しました');
-    }
+    // 既存の form オブジェクトをそのままPOST
+    await $fetch(`${config.public.apiBaseUrl}/api/users/signup`, {
+      method: 'POST',
+      credentials: 'include',
+      body: form, // バックエンドの受け口に合わせて必要ならフィールド絞る
+    });
+    navigateTo('/login'); // 既存の動線へ
   });
 };
 </script>
