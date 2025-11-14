@@ -3,7 +3,9 @@
     <!-- Hero セクション -->
     <section class="bg-gray-100 py-16 px-6 text-center">
       <div class="max-w-3xl mx-auto">
-        <h1 class="text-3xl sm:text-5xl font-bold text-primary mb-4">あなたの暮らしに、安心を。</h1>
+        <h1 class="text-3xl sm:text-5xl font-bold text-primary mb-4">
+          あなたの暮らしに、安心を。
+        </h1>
         <p class="text-lg text-gray-600">
           BBSS
           Onlineは、最先端のセキュリティソリューションをあなたのご家庭やビジネスへお届けします。
@@ -27,17 +29,25 @@
           :key="item.id"
           class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 flex flex-col"
         >
-          <img :src="item.image" :alt="item.name" class="rounded mb-4 aspect-[4/3] object-cover" />
+          <img
+            :src="item.image"
+            :alt="item.name"
+            class="rounded mb-4 aspect-[4/3] object-cover"
+          />
           <h3 class="text-lg font-semibold mb-2">{{ item.name }}</h3>
           <p class="text-sm text-gray-600 flex-1">{{ item.description }}</p>
           <div class="mt-4 flex justify-between items-center">
-            <span class="text-primary font-bold text-lg">¥{{ item.price.toLocaleString() }}</span>
-            <NuxtLink
-              to="/cart"
-              class="bg-gray-900 text-white text-sm px-4 py-2 rounded hover:opacity-90 transition"
+            <span class="text-primary font-bold text-lg"
+              >¥{{ item.price.toLocaleString() }}</span
+            >
+            <BaseButton
+              variant="primary"
+              size="base"
+              class="text-sm"
+              @click="addToCart(item)"
             >
               購入する
-            </NuxtLink>
+            </BaseButton>
           </div>
         </div>
       </div>
@@ -45,13 +55,37 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { useCart } from '~/composables/useCart'; // ★追加
+
+// 既存の products はそのまま
+
+const { add } = useCart(); // ★追加
+
+const addToCart = (item: {
+  id: number | string;
+  name: string;
+  price: number;
+  image?: string;
+}) => {
+  // ストアの型に合わせて id は文字列・price は整数（円）
+  add({
+    id: String(item.id),
+    name: item.name,
+    price: Math.round(item.price),
+    quantity: 1,
+    image: item.image,
+  });
+  navigateTo('/cart');
+};
+
 // 仮の商品一覧（画像URLなど後で差し替え可能）
 const products = [
   {
     id: 1,
     name: 'i-フィルター for マルチデバイス',
-    description: '自宅を守るための総合セキュリティシステム。カメラ・センサー・アラーム完備。',
+    description:
+      '自宅を守るための総合セキュリティシステム。カメラ・センサー・アラーム完備。',
     price: 797,
     image: '/images/product1.png',
   },

@@ -6,7 +6,8 @@ export default defineNuxtConfig({
   // 環境変数から読み込み
   runtimeConfig: {
     public: {
-      apiBaseUrl: 'default-api-url',
+      apiBaseUrl:
+        process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001',
     },
   },
 
